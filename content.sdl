@@ -1,0 +1,54 @@
+// Author of the polyplex content files
+// (will be used as a default for content with unspecified owners)
+author "Clipsey"
+
+// License
+// (will be used as a default for content with unspecified licenses)
+license "CC"
+
+// Header message (add license text here if you need to)
+// (will be used as a default for content with unspecified messages)
+message "Polyplex Content File Example File"
+
+// Origin to get content from.
+origin "content/"
+
+// The recipe the compiler needs to go through
+// <os> specifies which operating system this recipe is for.
+// default for <os> is everything.
+recipe os="linux,win32,osx" {
+	// <type> specifies how polyplex should store the texture internally in the file.
+	texture type="png" "textures/my_texture.png"
+	texture type="tga" "textures/texture_folder/"
+
+	// <type> specifies which language the script is written in
+	// will be used later when ppcc extensions happen to run the proper script compiler.
+	script type="angelscript" "scripts/my_script.as"
+	script type="angelscript" "scripts/my_scripts/"
+
+	// <type> specifies which type of audio it is (changes how audio can be handled.)
+	audio type="sound" "audio/ouch.ogg"
+	audio type="music" "audio/bgam.ogg"
+	
+	// Bundle file
+	bundle "my_bundle" {
+
+		// Custom message for the header of the bundle.
+		message "A test bundle."
+		
+		// Content of the bundle.
+		content {
+
+			// Subbundle, aka. "folder".
+			// Like UNIX, everything is a file, including subdirectories.
+			bundle "textures" {
+				content {
+					// Physical file to add to the bundles! (path based on origin)
+					texture type="png" "textures/my_texture.png" // All default settings
+					texture type="png" "textures/my_other_texture.png" // All default settings
+					texture type="png" "textures/my_last_texture.png" // All default settings
+				}
+			}
+		}
+	}
+}

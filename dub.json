@@ -6,7 +6,13 @@
 	"description": "Polyplex Content Compiler is a utility to compile assets into polyplex content files",
 	"copyright": "Copyright © 2018, Clipsey",
 	"license": "MIT",
+	"buildOptions": [
+		"debugMode",
+		"debugInfo",
+		"alwaysStackFrame"
+	],
 	"dependencies": {
-		"ppc": "~master"
+		"ppc": "~master",
+		"sdlang-d": "~>0.10.2"
 	}
 }
