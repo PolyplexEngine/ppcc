@@ -1,11 +1,12 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"imageformats": "6.1.3",
+		"arsd-official": "2.1.3",
+		"imageformats": "7.0.0",
 		"libinputvisitor": "1.2.2",
 		"ppc": "~master",
-		"sdlang-d": "0.10.2",
-		"taggedalgebraic": "0.10.11",
-		"unit-threaded": "0.6.36"
+		"sdlang-d": "0.10.4",
+		"taggedalgebraic": "0.10.12",
+		"unit-threaded": "0.7.53"
 	}
 }

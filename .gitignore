@@ -13,3 +13,4 @@ ppcc
 *.o
 *.obj
 *.lst
+*.ppc

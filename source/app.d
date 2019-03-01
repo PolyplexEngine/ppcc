@@ -1,111 +1,240 @@
-import std.stdio;
-import ppc;
-import ppc.utils;
-
-import std.random;
-import std.algorithm.searching;
+import pcd;
 import std.conv;
-import std.path;
+import std.stdio;
+import std.string;
+import ppc.types.image;
+
+enum ErrorNotEnoughArgs = "Not enough arguments specified and no content file found, see ppcc --help for help.";
+enum ErrorFileNotFound = "File not found!";
+enum ErrorInvalidOption = "Invalid option!";
+
+enum HelpText = "Polyplex Content Compiler
+Copyright (C) 2018, Clipsey
+
+Command layout:
+ppcc (content file) (options)
+
+Arguments:
+    -h/--help   |   Show helptext
+    -c/--cmp    |   Compile single file
+    -p/--prj    |   Compile project file (default)
+    -v          |   Verbose logging
+    -of         |   Output debug info about project";
+
+void main(string[] args) {
+    import std.file : exists;
+    import std.algorithm : canFind;
+    if (args.length == 1) {
+        if (!exists("content.sdl")) {
+            writeln(ErrorNotEnoughArgs);
+            return;
+        }
+
+        compileProject("content.sdl", false);
+        return;
+    }
+
+    if (args.length == 2 && args[1] == "-v") {
+        if (!exists("content.sdl")) {
+            writeln(ErrorNotEnoughArgs);
+            return;
+        }
+
+        compileProject("content.sdl", true);
+    }
+
+    if (args.canFind("--help")) {
+        writeln(HelpText);
+        return;
+    }
+
+    bool verbose = args.canFind("-v");
+
+    string[] aArgs = args[1..$];
+    string[] sCompileActions;
+    string[] prjCompileActions;
+    bool awaitingS;
+    if (aArgs[0] == "-of") {
+        if (aArgs.length == 2) {
+            writeln(getProject(aArgs[1]).to!string);
+        }
+    }
+
+    foreach(arg; aArgs) {
+        if (arg == "-v") continue;
+        if (arg == "-c" || arg == "--cmp") {
+            awaitingS = true;
+            continue;
+        }
+        if (arg == "-p" || arg == "--proj") {
+            awaitingS = false;
+            continue;
+        }
+
+        if (awaitingS) {
+            if (!exists(arg)) {
+                writeln(ErrorFileNotFound, " (", arg, ")");
+                return;
+            }
+
+            sCompileActions ~= arg;
+            continue;
+        }
+        
+        if (arg[0] == '-') {
+            writeln(ErrorInvalidOption, " (", arg, ")");
+            return;
+        }
+
+
+        if (!exists(arg)) {
+            writeln(ErrorFileNotFound, " (", arg, ")");
+            return;
+        }
+
+        prjCompileActions ~= arg;
+    }
+    foreach(file; sCompileActions) {
+        compileFile(file, verbose);
+    }
+    foreach(project; prjCompileActions) {
+        compileProject(project, verbose);
+    }
+    if (verbose) writeln("Compilation completed.");
+}
+
+import ppc.backend;
+import ppc.types : Types, getTypeOf;
 import std.file;
+import std.path;
+import std.string;
 
-import sdlang;
-import cfile;
+void compileProject(string file, bool verbose = false) {
+    PCD proj = getProject(file);
+    if (verbose) writeln("Compiling ", file, "...");
 
-void main(string[] args_o)
-{
-	string[] args = args_o[1..$];
-	try {
-		if (args.length < 2) {
-			if (args.length == 0) {
-				HandleProjectFile("content.sdl");
-			} else {
-				HandleProjectFile(args[0]);
-			}
-		} else {
-			if (args[0] == "--convert" || args[0] == "-c") {
-				for (int i = 1; i < args.length; i++) {
-					//Setup base factories.
-					SetupBaseFactories();
-					
-					if (args[i].endsWith(".png") || args[i].endsWith(".jpeg") || args[i].endsWith(".jpg") || args[i].endsWith(".bmp")) {
-						ConvertImage(args[i]);
-					} else if (args[i].endsWith(".ogg")) {
-						ConvertAudio(args[i]);
-					} else {
-						writeln("<Warning> unknown filetype...");
-						ConvertRaw(args[i]);
-					}
-				}
-				writeln("Done.");
-				return;
-			} else {
-				writeln("Invalid parameters!
-				
-	Usage:
-	ppcc --convert (input file) (output file name (WITHOUT .ppc extension)) (etc.)");
-			}
-		}
-	} catch (Exception ex) {
-		writeln("Failed building PPCC project!\nReason:\n"~ex.message);
-	}
+    foreach(res; proj.recipes) {
+        if (verbose) writeln("==== ", res.name, " ===");
+        foreach(resi; res.recipeItems) {
+            string pth = res.path;
+            if (pth != "") {
+                version(Posix) {
+                    pth = res.path;
+                } else {
+                    pth = res.path;
+                }
+            }
+            string iPath = buildPath(proj.inputDirectory, pth, resi.path.dirName);
+            string iFile = buildPath(proj.inputDirectory, pth, resi.path);
+            string oPath = buildPath(proj.outputDirectory, pth, resi.path.dirName);
+            string oFile = buildPath(proj.outputDirectory, pth, resi.path.stripExtension~".ppc");
+            string iExt = resi.path.baseName.extension;
+
+            if(!oPath.exists) {
+                import std.file : mkdirRecurse;
+                mkdirRecurse(oPath);
+            }
+            try {
+                // Shader case
+                switch (resi.type) {
+                    case RecipeType.Shader:
+                        // Default is PSGL
+                        if (resi.subType == "psgl" || resi.subType == "") {
+                            import ppc.types;
+                            import ppc.backend.loaders.shader.psgl;
+
+                            /// Create shader object
+                            Shader s;
+                            foreach(sFile; iPath.getExtendedFiles(resi.path)) {
+                                ShaderType t = sFile.toShaderType;
+                                s.shaders[t] = GLSLShader(cast(ubyte[])readText(sFile));
+                            }
+
+                            // Compile shader object
+                            ubyte[] psgl = savePSGL(s);
+
+                            // Package shader
+                            PPCCreateInfo createInfo = PPCCreateInfo(resi.author, resi.license);
+                            compileToPPC(psgl, Types.Shader, oFile, createInfo);
+                            if (verbose) writeln("<Shader> compiled shaders to PSGL in ", oFile, "...");
+                        } else {
+                            throw new Exception("No other types are supported.");
+                        }
+                        break;
+                    case RecipeType.Texture:
+                        if (resi.subType !is null && resi.subType != "") {
+                            if (resi.subType != iExt[1..$]) {
+                                ImageType typ = resi.subType.toImgType;
+                                Image img = Image(loadFile(iFile));
+                                ubyte[] data = img.convertTo(typ);
+                                compileToPPC(data, Types.Image, oFile, PPCCreateInfo(resi.author, resi.license));
+                                if (verbose) {
+                                    writeln("<", img.info.imageType.to!string ," -> " ~ typ.to!string ~ "> Converted successfully...");
+                                    writeln("<", Types.Image.to!string, ">", " Compiled ", iFile, "...");
+                                }
+                                break;
+                            }
+                        }
+                    case RecipeType.Font:
+                    case RecipeType.Model:
+                    case RecipeType.Audio:
+                    case RecipeType.Data:
+                        handleDefault(verbose, iFile, oFile, resi);
+                        break;
+                    default:
+                        throw new Exception("Unknown recipe type!");
+                }
+            } catch (Exception ex) {
+                writeln("Compilation error ", ex.message, ", skipping", iFile, "...");
+            }
+        }
+    }
 }
 
-void HandleProjectFile(string file) {
-	if (!exists(file)) throw new Exception("Project file " ~ file ~ " was not found!");
-	ContentFileDefinition def = new ContentFileDefinition(parseSource(file));
-
+void handleDefault(bool verbose, string iFile, string oFile, PCDRecipeItem resi) {
+    Types t = iFile.getTypeOf;
+    compileToPPC(cast(ubyte[])read(iFile), t, oFile, PPCCreateInfo(resi.author, resi.license));
+    if (verbose) writeln("<", t.to!string, ">", " Compiled ", iFile, "...");
+                    
 }
 
-void ConvertImage(string file) {
-	string name = stripExtension(file);
-
-	Image img = new Image(name);
-	File f = File(file);
-	ubyte[] data = [];
-	foreach(ubyte[] buff; f.byChunk(4096)) {
-		data = Combine(data, buff);
-	}
-	f.close();
-	img.Convert(data, 0);
-	WriteContentFile(img, file);
+string[] getExtendedFiles(string directory, string fname) {
+    string[] toCompile;
+    foreach(DirEntry file; dirEntries(directory, SpanMode.shallow, false)) {
+        if (file.name.baseName.startsWith(fname)) {
+            toCompile ~= file.name;
+        }
+    }
+    return toCompile;
 }
 
-void ConvertAudio(string file) {
-	string name = stripExtension(file);
-	Audio aud = new Audio(name);
-	File f = File(file);
-	ubyte[] data = [];
-	foreach(ubyte[] buff; f.byChunk(4096)) {
-		data = Combine(data, buff);
-	}
-	f.close();
-	aud.Convert(data, AudioStorageType.OGG);
-	writeln("A");
-	WriteContentFile(aud, file);
+void compileFile(string file, bool verbose = false) {
+    PPCCreateInfo createInfo;
+    if (file.getTypeOf == Types.Shader) {
+        writeln("Cannot compile single-shader, skipping...");
+        return;
+    }
+    createInfo.author = "Clipsey";
+    createInfo.license = "CC";
+    Types t = compileToPPC(file, file.stripExtension~".ppc", createInfo);
+    if (verbose) writeln("<", t.to!string, ">", " Compiled ", file, "...");
 }
 
-void ConvertRaw(string file) {
-	string name = stripExtension(file);
-
-	RawContent raw = new RawContent(name);
-	File f = File(file);
-	ubyte[] data;
-	foreach(ubyte[] buff; f.byChunk(4096)) {
-		data = Combine(data, buff);
-	}
-	f.close();
-	raw.Convert(data, 0);
-	WriteContentFile(raw, file);
+PCD getProject(string file) {
+    import std.file;
+    return loadPCD(file);
 }
 
-void WriteContentFile(Content input, string name) {
-	ContentFile f = new ContentFile(FileTypeId.Content);
-	string oname = stripExtension(name);
-	f.Data = input;
-	f.Info = new ContentInfo();
-	f.Info.Author = "TODO";
-	f.Info.License = ContentLicense.Propriatary;
-	f.Info.Message = "TODO";
-	f.Save(oname~".ppc");
-	writeln("<Convert::" ~ input.TypeID.text ~ "> " ~ name ~ " -> " ~ oname~".ppc");
+ImageType toImgType(string str) {
+    switch (str.toLower) {
+        case "png":
+            return ImageType.PNG;
+        case "tga":
+        case "targa":
+            return ImageType.TGA;
+        case "pti":
+            return ImageType.PTI;
+        default:
+            throw new Exception("Invalid image type name! (supported are: png, tga, targa and pti)");
+    }
 }
