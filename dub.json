@@ -11,6 +11,9 @@
 		"debugInfo",
 		"alwaysStackFrame"
 	],
+	"stringImportPaths": [
+		"."
+	],
 	"dependencies": {
 		"ppc": "~>0.2.0",
 		"sdlang-d": "~>0.10.4"

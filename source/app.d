@@ -8,8 +8,15 @@ enum ErrorNotEnoughArgs = "Not enough arguments specified and no content file fo
 enum ErrorFileNotFound = "File not found!";
 enum ErrorInvalidOption = "Invalid option!";
 
+enum License = import("LICENSE");
+
 enum HelpText = "Polyplex Content Compiler
-Copyright (C) 2018, Clipsey
+Copyright (C) 2018, Polyplex
+This is FREE SOFTWARE under the GPLv3 license!
+To see the license run `ppcc license`.
+
+Special Commands:
+    license     |   Show license text
 
 Command layout:
 ppcc (content file) (options)
@@ -29,8 +36,13 @@ void main(string[] args) {
             writeln(ErrorNotEnoughArgs);
             return;
         }
-
+        writeln("Compiling project...");
         compileProject("content.sdl", false);
+        return;
+    }
+
+    if (args[1] == "license") {
+        writeln(License);
         return;
     }
 
