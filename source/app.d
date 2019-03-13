@@ -18,11 +18,13 @@ To see the license run `ppcc license`.
 
 Special Commands:
     license     |   Show license text
+    init        |   Create a new project
+    help        |   Show helptext
 
-Command layout:
+General Command layout:
 ppcc (content file) (options)
 
-Arguments:
+Options:
     -h/--help   |   Show helptext
     -c/--cmp    |   Compile single file
     -p/--prj    |   Compile project file (default)
@@ -61,7 +63,7 @@ void main(string[] args) {
         compileProject("content.sdl", true);
     }
 
-    if (args.canFind("--help")) {
+    if (args.canFind("--help", "-h", "help")) {
         writeln(HelpText);
         return;
     }

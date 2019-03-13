@@ -14,4 +14,18 @@ If there's an content.sdl file in the directory you are in you simply run `ppcc`
 
 Otherwise you can choose files directly using `ppcc -c (files)`.
 
-See `ppcc -h` for more help.
+```
+Special Commands:
+    license     |   Show license text
+    init        |   Create a new project
+    help        |   Show helptext
+
+General Command layout:
+ppcc (content file) (options)
+
+Options:
+    -h/--help   |   Show helptext
+    -c/--cmp    |   Compile single file
+    -p/--prj    |   Compile project file (default)
+    -v          |   Verbose logging
+    -of         |   Output debug info about project```
