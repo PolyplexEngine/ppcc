@@ -28,4 +28,5 @@ Options:
     -c/--cmp    |   Compile single file
     -p/--prj    |   Compile project file (default)
     -v          |   Verbose logging
-    -of         |   Output debug info about project```
+    -of         |   Output debug info about project
+```
