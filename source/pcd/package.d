@@ -6,6 +6,7 @@ import sdlang.ast;
 enum RecipeType : string {
     Texture = "texture",
     Audio = "audio",
+    Sound = "sound",
     Shader = "shader",
     Font = "font",
     Model = "model",

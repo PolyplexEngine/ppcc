@@ -2,6 +2,7 @@
 	"fileVersion": 1,
 	"versions": {
 		"arsd-official": "2.1.3",
+		"asdf": "0.4.5",
 		"imageformats": "7.0.0",
 		"libinputvisitor": "1.2.2",
 		"ppc": "0.2.1",
