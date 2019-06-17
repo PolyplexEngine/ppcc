@@ -18,4 +18,5 @@ recipe name="Test Recipe" {
 	audio "audio/music/arpeggio.ogg" type="ogg" author="Clipsey" license="CC"
 	shader "myShader" type="psgl" author="Clipsey" license="BSL-1.0"
 	texture "logo.png" type="pti" license="See repo"
+	font "myFont.sdl"
 }

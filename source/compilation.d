@@ -7,6 +7,8 @@ import std.string;
 import pcd;
 import std.stdio;
 import std.conv;
+import vibe.data.sdl;
+import sdlang.parser : parseFile;
 
 void compileProject(string file, bool verbose = false) {
     PCD proj = getProject(file);
@@ -75,6 +77,17 @@ void compileProject(string file, bool verbose = false) {
                             }
                         }
                     case RecipeType.Font:
+                        if (iExt !is null) {
+                            if (iExt[1..$] == "sdl") {
+                                TypeFace tf = TypeFace(deserializeSDLang!FontDescription(parseFile(iFile)));
+                                compileToPPC(tf.convert(), Types.Image, oFile, PPCCreateInfo(resi.author, resi.license));
+                                if (verbose) {
+                                    writeln("<FontDescription -> BMF> Converted successfully...");
+                                    writeln("<Font>", " Compiled ", iFile, "...");
+                                }
+                            }
+                        }
+                        break;
                     case RecipeType.Model:
                     case RecipeType.Audio:
                     case RecipeType.Sound:
@@ -85,7 +98,7 @@ void compileProject(string file, bool verbose = false) {
                         throw new Exception("Unknown recipe type!");
                 }
             } catch (Exception ex) {
-                writeln("Compilation error ", ex.message, ", skipping", iFile, "...");
+                writeln("Compilation error ", ex.message, "\nSkipping ", iFile, "...");
             }
         }
     }
