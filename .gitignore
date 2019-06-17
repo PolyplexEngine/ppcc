@@ -15,3 +15,4 @@ ppcc
 *.lst
 *.ppc
 content/
+dub.selections.json
