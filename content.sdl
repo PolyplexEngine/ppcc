@@ -19,4 +19,5 @@ recipe name="Test Recipe" {
 	shader "myShader" type="psgl" author="Clipsey" license="BSL-1.0"
 	texture "logo.png" type="pti" license="See repo"
 	font "myFont.sdl"
+	font "myFont2.sdl"
 }

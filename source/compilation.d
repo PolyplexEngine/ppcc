@@ -76,6 +76,8 @@ void compileProject(string file, bool verbose = false) {
                                 break;
                             }
                         }
+                        handleDefault(verbose, iFile, oFile, resi);
+                        break;
                     case RecipeType.Font:
                         if (iExt !is null) {
                             if (iExt[1..$] == "sdl") {
