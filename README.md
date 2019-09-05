@@ -18,10 +18,19 @@ Otherwise you can choose files directly using `ppcc -c (files)`.
 Special Commands:
     license     |   Show license text
     init        |   Create a new project
+    new         |   Create a new item
     help        |   Show helptext
 
-General Command layout:
-ppcc (content file) (options)
+Default Command:
+    ppcc (content file) (options)
+
+New Command:
+    ppcc new <item> <name>
+
+    Accepted Items:
+        shader  |   A shader pair
+        font    |   A font
+
 
 Options:
     -h/--help   |   Show helptext
