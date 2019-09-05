@@ -16,9 +16,11 @@ path:input "raw/";
 
 recipe name="Test Recipe" {
 	audio "audio/music/arpeggio.ogg" type="ogg" author="Clipsey" license="CC"
-	shader "shaders/myShader" author="Clipsey" license="BSL-1.0"
 	texture "textures/logo.png" type="pti" license="See repo"
 
 	font "fonts/myFont.sdl"
 	font "fonts/myFont2.sdl"
+	
+	shader "shaders/myShader" author="Clipsey" license="BSL-1.0"
+	shader "shaders/myOtherShader" author="Clipsey" license="BSL-1.0"
 }
