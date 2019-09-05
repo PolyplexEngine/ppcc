@@ -12,12 +12,13 @@ info:license "Unknown"
 path:output "content/"
 
 // Folder to export content from.
-path:input "genContent/";
+path:input "raw/";
 
 recipe name="Test Recipe" {
 	audio "audio/music/arpeggio.ogg" type="ogg" author="Clipsey" license="CC"
-	shader "myShader" type="psgl" author="Clipsey" license="BSL-1.0"
-	texture "logo.png" type="pti" license="See repo"
-	font "myFont.sdl"
-	font "myFont2.sdl"
+	shader "shaders/myShader" author="Clipsey" license="BSL-1.0"
+	texture "textures/logo.png" type="pti" license="See repo"
+
+	font "fonts/myFont.sdl"
+	font "fonts/myFont2.sdl"
 }

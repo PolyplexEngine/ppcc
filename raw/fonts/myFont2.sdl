@@ -1,0 +1,7 @@
+size 54
+font "/usr/share/fonts/ubuntu/Ubuntu-B.ttf"
+characters {
+    entry {
+        range start=32 end=10024
+    }
+}
