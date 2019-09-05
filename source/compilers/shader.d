@@ -13,7 +13,7 @@ void buildShader(PathData path, PCDRecipeItem recipeItem) {
         case "psgl", "":
             /// Create shader object
             Shader s;
-            foreach(sFile; path.inputPath.getExtendedFiles(recipeItem.path)) {
+            foreach(sFile; path.inputFile.getFilesByNameOrPathName()) {
                 ShaderType t = sFile.toShaderType;
                 s.shaders[t] = GLSLShader(cast(ubyte[])readText(sFile));
             }

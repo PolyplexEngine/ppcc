@@ -122,6 +122,17 @@ void handleDefault(string iFile, string oFile, PCDRecipeItem resi) {
     if (VERBOSE_MODE) writeln("<", t.to!string, ">", " Compiled ", iFile, "...");
 }
 
+string[] getFilesByNameOrPathName(string directoryOrName) {
+    string baseFileName = directoryOrName.baseName();
+    if (directoryOrName.exists && isDir(directoryOrName)) {
+        return getExtendedFiles(directoryOrName, baseFileName);
+    }
+    return getExtendedFiles(directoryOrName[0..$-(baseFileName.length)], baseFileName);
+}
+
+/**
+    Gets all the files starting with the specified name in the specified directory
+*/
 string[] getExtendedFiles(string directory, string fname) {
     string[] toCompile;
     foreach(DirEntry file; dirEntries(directory, SpanMode.shallow, false)) {
