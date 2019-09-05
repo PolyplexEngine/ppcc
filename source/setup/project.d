@@ -1,8 +1,10 @@
 module setup.project;
 import project;
-import std.datetime;
-import stdf = std.file;
-import stdp = std.path;
+import std.datetime, std.conv, std.format, std.stdio;
+
+// Seperate path and file imports to avoid collissions
+import stdf = std.file, stdp = std.path;
+
 
 /**
     Initialize project
@@ -24,7 +26,7 @@ void doInit() {
     config.license = repeatGet("License");
     config.dependencies["pp"] = LatestPolyVer;
 
-    stdf.write("dub.json", config.toJson);
+    stdf.write("dub.json", config.toSDL);
     stdf.write("content.sdl", config.getDefaultContent);
     stdf.mkdir("content");
     stdf.mkdir("raw");
